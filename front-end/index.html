@@ -1,0 +1,478 @@
+
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link href='http://fonts.googleapis.com/css?family=Bitter' rel='stylesheet' type='text/css'>
+        <link href='style.css' rel='stylesheet' type='text/css'>
+
+        <title>Online Evation</title>
+        <script language="javascript" type="text/javascript"
+        src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <script language="javascript" type="text/javascript" src="web3.js"></script>
+    </head>
+
+    <!-- Visual Part -->
+    <body>
+        <div class="form-style-10">
+            <h1>Welcome to Online Elections System Page
+            <span>Proiect Pentru Licenca in UTM</span></h1>
+            
+            <div class="section"><span>1</span>Input Passport Data</div>
+            <div class="inner-wrap">
+                <label><input type="fName" id="fname" style="width:28em;"></input>First Name</label>
+                <label><input type="sName" id="sname" style="width:28em;"></input>Second Name</label>           
+                <label><input type="idnp" id="idnp" style="width:28em;"></input>IDNP</label>
+                <label><button onclick="requestBallot()">Send Data</button>Sending Data To Verify <b id="c_address_text"></b></label> 
+                <label><div id="ifApproved"></div></label>
+            </div>
+
+
+            <div class="section"><span>2</span>Choose Candidate!</div>
+            <div class="inner-wrap">
+                    <label for="candidates">Choose a candidate:</label>
+                    <select id="candidates" name="candidates">
+                      <option value="PAS">PAS</option>
+                      <option value="PDM">PDM</option>
+                      <option value="PSRM">PSRM</option>
+                      <option value="PCRM">PCRM</option>
+                    </select> 
+                  <input type="submit" onclick="pasVote('10')">
+                  <button onclick="makeVote()">To Vote</button>
+                  <label>Vote's ID IS: <div id="generated_id"></div></label>
+            </div>
+
+            <div class="section"><span>3</span>Info:</div>
+            <div class="inner-wrap">
+                <label>Type your id to check your vote<input type="ID" id="ID" style="width:28em;"></input>U voted For:</label><div id="candidateById"></div>
+                <label><button onclick="getCandidateById()">Get Result Of ID</button></label>
+                <hr>
+                <label>Current Result of Online Voting:</label>
+                <label><div id="results"></div></label>
+                <label><button onclick="getResult()">Get current result</button></label>
+            </div>
+
+
+           
+            <div class="section"><span>4</span>Admin Panel</div>
+            <div class="inner-wrap">
+                <label>
+                   Set Contract Adress: <input id="contractadress" style="width:5em;"></input>
+                    <button onclick="setContractAdress()">Set</button>
+                </label>
+                <hr>
+                <label>
+                    ResetVoteByID: <input id="resetingvote"style="width:5em;"></input>
+                    <button onclick="resetVotebyIDNP()">Reset</button>
+                </label>
+                <hr>
+                <label>Add Account To Storage:</label>
+                <label>IDNP:<input id="IDNP"style="width:5em;"></input>  </label>
+                <label>Address:<input id="Adress"style="width:5em;"></input>  </label>
+                <label><button onclick="addAccount()">Add</button></label>
+            </div>
+        </div>
+
+        <!-- Scripts -->
+        <script>
+            // use the given Provider, e.g in the browser with Metamask, or instantiate a new websocket provider
+            const web3 = new Web3(Web3.givenProvider || 'ws://localhost:8546', null, {});
+            
+            // Instance of the Contract without address (it will be provided later)
+            // Change ABI object according to the deployed Contract
+            const Contract = new web3.eth.Contract(
+[
+{
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint16",
+          "name": "vote",
+          "type": "uint16"
+        }
+      ],
+      "name": "voteAccepted",
+      "type": "event"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint16",
+          "name": "",
+          "type": "uint16"
+        }
+      ],
+      "name": "cadidateById",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint16",
+          "name": "idnp",
+          "type": "uint16"
+        }
+      ],
+      "name": "pasVote",
+      "outputs": [
+        {
+          "internalType": "uint16",
+          "name": "",
+          "type": "uint16"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint16",
+          "name": "_idnp",
+          "type": "uint16"
+        }
+      ],
+      "name": "pdmVote",
+      "outputs": [
+        {
+          "internalType": "uint16",
+          "name": "",
+          "type": "uint16"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint16",
+          "name": "_idnp",
+          "type": "uint16"
+        }
+      ],
+      "name": "psrmVote",
+      "outputs": [
+        {
+          "internalType": "uint16",
+          "name": "",
+          "type": "uint16"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint16",
+          "name": "_idnp",
+          "type": "uint16"
+        }
+      ],
+      "name": "pcrmVote",
+      "outputs": [
+        {
+          "internalType": "uint16",
+          "name": "",
+          "type": "uint16"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint16",
+          "name": "_idnp",
+          "type": "uint16"
+        }
+      ],
+      "name": "voteRegistering",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getResult",
+      "outputs": [
+        {
+          "internalType": "uint16[4]",
+          "name": "",
+          "type": "uint16[4]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint16",
+          "name": "id",
+          "type": "uint16"
+        }
+      ],
+      "name": "getCandidateById",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint16",
+          "name": "_idnp",
+          "type": "uint16"
+        },
+        {
+          "internalType": "address",
+          "name": "_client",
+          "type": "address"
+        }
+      ],
+      "name": "addAdress",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "changeOwner",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint16",
+          "name": "_idnp",
+          "type": "uint16"
+        }
+      ],
+      "name": "resetVoteForId",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+]);
+            //Should be defined here    
+            let contract_address = "0x83F50C22241a61A98bb9c339C3c56A1784b48Fa8";
+            //Should be taken by BD request
+            let pKey;
+            Contract.options.address = contract_address;
+            //let acc = web3.eth.accounts.privateKeyToAccount(pKey);
+
+            let IDNP;
+            let FNAME;
+            let SNAME;
+            var vote_id;
+            let ballot_request;
+            let requestResult = true;
+
+            //Functions
+            const makeVote = () => {
+                IDNP = document.getElementById("idnp").value;
+                if (requestBallot){
+                    let choice = document.getElementById("candidates").value;
+                    try{
+                        if (choice == "PAS") 
+                        {
+                            vote_id = pasVote(IDNP);
+                        }
+                        if (choice == "PDM") 
+                        {
+                            vote_id = pdmVote(IDNP)
+                        }
+                        if (choice == "PCRM") 
+                        {
+                            vote_id = pcrmVote(IDNP)
+                        }
+                        if (choice == "PSRM") 
+                        {
+                            vote_id = psrmVote(IDNP)
+                        }
+                        //alert(vote_id);
+                    }
+                    catch(err){
+                        alert(err);
+                    }
+                }
+                else{
+                    alert("Error")
+                }
+            }
+
+            //View Function
+
+            function getCandidateById(){
+                 let id = document.getElementById("ID").value;
+                Contract.methods.getCandidateById(id).call().then((_candidate) => {
+                  alert(`${_candidate}`)
+                  $("#candidateById").empty();
+                  $("#candidateById").append(`${_candidate}`);
+                });
+            }
+
+
+            function getResult()
+            {
+                Contract.methods.getResult().call().then(( resp ) => {
+                        alert(`storage content is: ${resp}`); 
+                        $("#results").empty();
+
+                        $("#results").append(
+                        `<div class="results">
+                            <ul>
+                                <li>PAS: ${resp[0]}</li>
+                                <li>PDM: ${resp[1]}</li>
+                                <li>PSRM: ${resp[2]}</li>
+                                <li>PCRM: ${resp[3]}</li>
+                            </ul>
+                        </div>`);
+                        return resp;
+                    });
+            }
+
+            //Bd Function
+            function requestBallot(){
+                //Here result of DB request;
+                requestResult;
+                if (requestResult){
+                    $("#ifApproved").text("true");
+                }
+                else{
+                    $("#ifApproved").text("false");
+                }
+            }
+
+            //Vote Functions
+            function pasVote(_idnp){  
+                web3.eth.getAccounts().then( accounts => {
+                    Contract.methods
+                                .pasVote(_idnp)
+                                .send({from: accounts[0]})
+                                .on('error', err => console.error(err))
+                });
+
+                Contract.events.voteAccepted().
+                on("data", function(event){
+                  let data = Object.getOwnPropertyDescriptor(event.returnValues, '0').value;
+                  $("#generated_id").text(`${data}\n`)
+                  alert(data);                  
+                })
+                .on("error", console.error);
+            }
+
+            function pdmVote(_idnp){  
+                web3.eth.getAccounts().then( accounts => {
+                    Contract.methods
+                                .pdmVote(_idnp)
+                                .send({from: accounts[0]})
+                                .on('error', err => console.error(err))
+                });
+
+                Contract.events.voteAccepted().
+                on("data", function(event){
+                  let data = Object.getOwnPropertyDescriptor(event.returnValues, '0').value;
+                  $("#generated_id").text(`${data}\n`)
+                  alert(data);                  
+                })
+                .on("error", console.error);
+
+            }
+
+            function pcrmVote(_idnp){  
+                web3.eth.getAccounts().then( accounts => {
+                    Contract.methods
+                                .pcrmVote(_idnp)
+                                .send({from: accounts[0]})
+                                .on('error', err => console.error(err))                  
+                });
+
+                Contract.events.voteAccepted().
+                on("data", function(event){
+                  let data = Object.getOwnPropertyDescriptor(event.returnValues, '0').value;
+                  $("#generated_id").text(`${data}\n`)
+                  alert(data);                  
+                })
+                .on("error", console.error);
+            }
+
+            function psrmVote(_idnp){  
+                web3.eth.getAccounts().then( accounts => {
+                    Contract.methods
+                                .psrmVote(_idnp)
+                                .send({from: accounts[0]})
+                                .on('error', err => console.error(err))
+                });
+
+                Contract.events.voteAccepted().
+                on("data", function(event){
+                  let data = Object.getOwnPropertyDescriptor(event.returnValues, '0').value;
+                  $("#generated_id").text(`${data}\n`)
+                  alert(data);                  
+                })
+                .on("error", console.error);
+            }
+
+            // Admin Test Functions
+            function resetVotebyIDNP(){
+                let _idnp = document.getElementById("resetingvote").value;
+                
+                web3.eth.getAccounts().then( accounts => {
+                    Contract.methods
+                                .resetVoteForId(_idnp)
+                                .send({from: accounts[0]})
+                                .on('error', err => console.error(err))
+                                .then(() => alert("Reseted"));
+                });
+            }
+
+            function setContractAdress(){
+                let _contractAdress = document.getElementById("contractadress").value;
+                Contract.method.changeOwner(_contractAdress).call();
+            }
+
+            function addAccount(){
+                let _accAdress = document.getElementById("Adress").value;
+                let _idnp = document.getElementById("IDNP").value;
+
+                web3.eth.getAccounts().then( accounts => {
+                    Contract.methods
+                                .addAdress(_idnp, _accAdress)
+                                .send({from: accounts[0]})
+                                .on('error', err => console.error(err))
+                                .then(() => alert("Added"));
+                });
+            }
+             
+        </script>
+    </body>
+</html>
+
